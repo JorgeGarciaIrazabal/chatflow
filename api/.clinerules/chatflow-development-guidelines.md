@@ -14,6 +14,7 @@ This document contains development guidelines and preferences specific to the Ch
 - Follow clean code principles and maintain consistent coding style
 
 ## Development tools
+- always activate the environment before performing any action "source .venv/bin/activate"
 - Use uv for virtual environment setup and dependency management
 - Leverage uv commands for project initialization, dependency management, and environment synchronization
 - Utilize uv's built-in formatting capabilities with the format command

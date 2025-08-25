@@ -2,7 +2,8 @@ from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean, J
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from typing import Optional, List
-from .user import Base
+
+from app.core.database import Base
 
 
 class Conversation(Base):

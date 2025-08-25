@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from .config import settings
@@ -41,11 +41,23 @@ def get_db():
         db.close()
 
 
-# Import all models to ensure they are registered with Base
-from app.models.user import User
-from app.models.conversation import Conversation, Message
-
-
 def init_db():
-    """Initialize database by creating all tables"""
+    """Initialize database by creating all tables and listing existing ones"""
+    # Import models here to avoid circular imports
+    from app.models.user import User
+    from app.models.conversation import Conversation, Message
+    
+    # List existing tables before creation
+    inspector = inspect(engine)
+    existing_tables = inspector.get_table_names()
+    print(f"Existing tables before creation: {existing_tables}")
+    
+    # Create all tables
     Base.metadata.create_all(bind=engine)
+    
+    # List tables after creation
+    inspector = inspect(engine)
+    created_tables = inspector.get_table_names()
+    print(f"Tables after creation: {created_tables}")
+    
+    return created_tables
