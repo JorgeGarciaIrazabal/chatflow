@@ -1,0 +1,7 @@
+build/
+ios/
+linux/
+macos/
+web/
+windows/
+api/
