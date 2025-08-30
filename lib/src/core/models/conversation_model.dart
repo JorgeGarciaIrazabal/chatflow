@@ -4,7 +4,7 @@ import 'package:chatflow/src/core/models/message_model.dart';
 
 part 'conversation_model.g.dart';
 
-@JsonSerializable()
+@JsonSerializable(fieldRename: FieldRename.snake)
 class ConversationResponse extends Equatable {
   final String? title;
   final int id;
@@ -47,7 +47,7 @@ class ConversationResponse extends Equatable {
       ];
 }
 
-@JsonSerializable()
+@JsonSerializable(fieldRename: FieldRename.snake)
 class ChatRequest extends Equatable {
   final String message;
   final int? conversationId;

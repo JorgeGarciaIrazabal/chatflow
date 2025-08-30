@@ -13,29 +13,29 @@ MessageResponse _$MessageResponseFromJson(Map<String, dynamic> json) =>
           $enumDecodeNullable(_$MessageRoleEnumMap, json['role']) ??
           MessageRole.user,
       responseType:
-          $enumDecodeNullable(_$ResponseTypeEnumMap, json['responseType']) ??
+          $enumDecodeNullable(_$ResponseTypeEnumMap, json['response_type']) ??
           ResponseType.text,
-      responseMetadata: json['responseMetadata'] as Map<String, dynamic>?,
+      responseMetadata: json['response_metadata'] as Map<String, dynamic>?,
       id: (json['id'] as num).toInt(),
-      conversationId: (json['conversationId'] as num).toInt(),
-      userId: (json['userId'] as num?)?.toInt(),
-      mcpToolUsed: json['mcpToolUsed'] as String?,
-      mcpResponse: json['mcpResponse'] as Map<String, dynamic>?,
-      createdAt: DateTime.parse(json['createdAt'] as String),
+      conversationId: (json['conversation_id'] as num).toInt(),
+      userId: (json['user_id'] as num?)?.toInt(),
+      mcpToolUsed: json['mcp_tool_used'] as String?,
+      mcpResponse: json['mcp_response'] as Map<String, dynamic>?,
+      createdAt: DateTime.parse(json['created_at'] as String),
     );
 
 Map<String, dynamic> _$MessageResponseToJson(MessageResponse instance) =>
     <String, dynamic>{
       'content': instance.content,
       'role': _$MessageRoleEnumMap[instance.role]!,
-      'responseType': _$ResponseTypeEnumMap[instance.responseType]!,
-      'responseMetadata': instance.responseMetadata,
+      'response_type': _$ResponseTypeEnumMap[instance.responseType]!,
+      'response_metadata': instance.responseMetadata,
       'id': instance.id,
-      'conversationId': instance.conversationId,
-      'userId': instance.userId,
-      'mcpToolUsed': instance.mcpToolUsed,
-      'mcpResponse': instance.mcpResponse,
-      'createdAt': instance.createdAt.toIso8601String(),
+      'conversation_id': instance.conversationId,
+      'user_id': instance.userId,
+      'mcp_tool_used': instance.mcpToolUsed,
+      'mcp_response': instance.mcpResponse,
+      'created_at': instance.createdAt.toIso8601String(),
     };
 
 const _$MessageRoleEnumMap = {

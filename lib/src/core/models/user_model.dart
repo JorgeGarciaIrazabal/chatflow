@@ -3,7 +3,7 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'user_model.g.dart';
 
-@JsonSerializable()
+@JsonSerializable(fieldRename: FieldRename.snake)
 class User extends Equatable {
   final int id;
   final String email;
@@ -39,7 +39,7 @@ class User extends Equatable {
       ];
 }
 
-@JsonSerializable()
+@JsonSerializable(fieldRename: FieldRename.snake)
 class UserCreate extends Equatable {
   final String email;
   final String? fullName;
@@ -60,7 +60,7 @@ class UserCreate extends Equatable {
   List<Object?> get props => [email, fullName, password];
 }
 
-@JsonSerializable()
+@JsonSerializable(fieldRename: FieldRename.snake)
 class Token extends Equatable {
   final String accessToken;
   final String tokenType;

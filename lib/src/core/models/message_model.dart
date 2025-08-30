@@ -19,7 +19,7 @@ enum ResponseType {
   action,
 }
 
-@JsonSerializable()
+@JsonSerializable(fieldRename: FieldRename.snake)
 class MessageResponse extends Equatable {
   final String content;
   final MessageRole role;
