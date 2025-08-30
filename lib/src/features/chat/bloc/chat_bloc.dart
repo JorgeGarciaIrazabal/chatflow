@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:chatflow/src/core/models/message_model.dart';
+import 'package:chatflow/src/core/services/error_handler_service.dart';
 import 'package:chatflow/src/features/chat/bloc/chat_event.dart';
 import 'package:chatflow/src/features/chat/bloc/chat_state.dart';
 import 'package:chatflow/src/features/chat/repository/chat_repository.dart';
@@ -56,7 +57,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         conversations: state.conversations,
         selectedConversationId: state.selectedConversationId,
       ));
-    } catch (e) {
+    } catch (e, s) {
+      ErrorHandlerService.handleError(e, s);
       emit(ChatError(
         message: e.toString(),
         messages: state.messages,
@@ -84,7 +86,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         conversations: conversations,
         selectedConversationId: state.selectedConversationId,
       ));
-    } catch (e) {
+    } catch (e, s) {
+      ErrorHandlerService.handleError(e, s);
       emit(ChatError(
         message: e.toString(),
         messages: state.messages,
@@ -112,7 +115,8 @@ class ChatBloc extends Bloc<ChatEvent, ChatState> {
         conversations: state.conversations,
         selectedConversationId: event.conversationId,
       ));
-    } catch (e) {
+    } catch (e, s) {
+      ErrorHandlerService.handleError(e, s);
       emit(ChatError(
         message: e.toString(),
         messages: state.messages,

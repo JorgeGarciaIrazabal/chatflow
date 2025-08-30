@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:bloc/bloc.dart';
+import 'package:chatflow/src/core/services/error_handler_service.dart';
 import 'package:chatflow/src/features/auth/bloc/auth_event.dart';
 import 'package:chatflow/src/features/auth/bloc/auth_state.dart';
 import 'package:chatflow/src/features/auth/repository/auth_repository.dart';
@@ -26,8 +27,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
       emit(AuthAuthenticated(user: user));
     } catch (e, s) {
-      print(e);
-      print(s);
+      ErrorHandlerService.handleError(e, s);
       emit(AuthFailure(message: e.toString()));
     }
   }
@@ -44,7 +44,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         fullName: event.fullName,
       );
       emit(AuthAuthenticated(user: user));
-    } catch (e) {
+    } catch (e, s) {
+      ErrorHandlerService.handleError(e, s);
       emit(AuthFailure(message: e.toString()));
     }
   }
@@ -57,7 +58,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       await authRepository.logout();
       emit(const AuthUnauthenticated());
-    } catch (e) {
+    } catch (e, s) {
+      ErrorHandlerService.handleError(e, s);
       emit(AuthFailure(message: e.toString()));
     }
   }
@@ -73,7 +75,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       } else {
         emit(const AuthUnauthenticated());
       }
-    } catch (e) {
+    } catch (e, s) {
+      ErrorHandlerService.handleError(e, s);
       emit(const AuthUnauthenticated());
     }
   }

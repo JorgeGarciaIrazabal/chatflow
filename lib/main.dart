@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:chatflow/src/core/services/error_handler_service.dart';
 import 'package:chatflow/src/features/auth/bloc/auth_bloc.dart';
 import 'package:chatflow/src/features/auth/bloc/auth_event.dart';
 import 'package:chatflow/src/features/auth/bloc/auth_state.dart';
@@ -12,6 +13,12 @@ import 'package:chatflow/src/features/chat/ui/chat_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Set up global error handler
+  FlutterError.onError = (FlutterErrorDetails details) {
+    ErrorHandlerService.handleError(details.exception, details.stack!);
+  };
+  
   final SharedPreferences preferences = await SharedPreferences.getInstance();
   runApp(MyApp(preferences: preferences));
 }
