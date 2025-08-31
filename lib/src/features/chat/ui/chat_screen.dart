@@ -1,17 +1,69 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:chatflow/src/features/auth/bloc/auth_bloc.dart';
-import 'package:chatflow/src/features/auth/bloc/auth_event.dart';
-import 'package:chatflow/src/features/chat/bloc/chat_bloc.dart';
-import 'package:chatflow/src/features/chat/bloc/chat_event.dart';
-import 'package:chatflow/src/features/chat/bloc/chat_state.dart';
+import 'package:provider/provider.dart';
+import 'package:chatflow/src/features/auth/controllers/auth_controller.dart';
+import 'package:chatflow/src/features/chat/controllers/chat_controller.dart';
 import 'package:chatflow/src/features/chat/ui/sidebar.dart';
 
-class ChatScreen extends StatelessWidget {
+class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
 
   @override
+  State<ChatScreen> createState() => _ChatScreenState();
+}
+
+class _ChatScreenState extends State<ChatScreen> {
+  final TextEditingController _messageController = TextEditingController();
+
+  @override
+  void dispose() {
+    _messageController.dispose();
+    super.dispose();
+  }
+
+  void _sendMessage(ChatController chatController) {
+    if (_messageController.text.isNotEmpty) {
+      chatController.sendMessage(_messageController.text);
+      _messageController.clear();
+    }
+  }
+
+  Widget _buildError(BuildContext context, ChatController chatController) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 64, color: Colors.red),
+            const SizedBox(height: 16),
+            Text(
+              'Error occurred',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              chatController.errorMessage ?? 'Unknown error',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                chatController.loadConversations();
+              },
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final chatController = Provider.of<ChatController>(context);
+    final authController = Provider.of<AuthController>(context, listen: false);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Chatflow'),
@@ -25,58 +77,29 @@ class ChatScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () {
-              context.read<AuthBloc>().add(AuthLogoutEvent());
+              authController.logout();
             },
           ),
         ],
       ),
       drawer: const Sidebar(),
-      body: BlocBuilder<ChatBloc, ChatState>(
-        builder: (context, state) {
-          if (state is ChatLoading) {
+      body: Consumer<ChatController>(
+        builder: (context, chatController, child) {
+          if (chatController.isLoading && chatController.messages.isEmpty) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (state is ChatError) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.error_outline, size: 64, color: Colors.red),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Error occurred',
-                      style: Theme.of(context).textTheme.headlineSmall,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      state.message,
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () {
-                        // Try to reload the conversations
-                        context.read<ChatBloc>().add(ChatLoadConversationsEvent());
-                      },
-                      child: const Text('Retry'),
-                    ),
-                  ],
-                ),
-              ),
-            );
+          if (chatController.errorMessage != null && chatController.messages.isEmpty) {
+            return _buildError(context, chatController);
           }
 
           return Column(
             children: [
               Expanded(
                 child: ListView.builder(
-                  itemCount: state.messages.length,
+                  itemCount: chatController.messages.length,
                   itemBuilder: (context, index) {
-                    final message = state.messages[index];
+                    final message = chatController.messages[index];
                     return ListTile(
                       title: Text(message.content),
                       subtitle: Text(message.role.toString()),
@@ -90,15 +113,14 @@ class ChatScreen extends StatelessWidget {
                   children: [
                     Expanded(
                       child: TextField(
+                        controller: _messageController,
                         decoration: const InputDecoration(
                           hintText: 'Type your message...',
                           border: OutlineInputBorder(),
                         ),
                         onSubmitted: (text) {
                           if (text.isNotEmpty) {
-                            context.read<ChatBloc>().add(
-                                  ChatSendMessageEvent(message: text),
-                                );
+                            _sendMessage(chatController);
                           }
                         },
                       ),
@@ -106,7 +128,7 @@ class ChatScreen extends StatelessWidget {
                     IconButton(
                       icon: const Icon(Icons.send),
                       onPressed: () {
-                        // TODO: Implement send message
+                        _sendMessage(chatController);
                       },
                     ),
                   ],

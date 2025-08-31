@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:chatflow/src/features/auth/bloc/auth_bloc.dart';
-import 'package:chatflow/src/features/auth/bloc/auth_event.dart';
-import 'package:chatflow/src/features/auth/bloc/auth_state.dart';
+import 'package:provider/provider.dart';
+import 'package:chatflow/src/features/auth/controllers/auth_controller.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -23,22 +21,26 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  void _login(AuthController authController) {
+    if (_formKey.currentState!.validate()) {
+      authController.login(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final authController = Provider.of<AuthController>(context, listen: false);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Login'),
       ),
-      body: BlocConsumer<AuthBloc, AuthState>(
-        listener: (context, state) {
-          if (state is AuthFailure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
-            );
-          }
-        },
-        builder: (context, state) {
-          if (state is AuthLoading) {
+      body: Consumer<AuthController>(
+        builder: (context, authController, child) {
+          if (authController.isLoading) {
             return const Center(child: CircularProgressIndicator());
           }
 
@@ -80,14 +82,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 24),
                   ElevatedButton(
                     onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        context.read<AuthBloc>().add(
-                              AuthLoginEvent(
-                                email: _emailController.text,
-                                password: _passwordController.text,
-                              ),
-                            );
-                      }
+                      _login(authController);
                     },
                     child: const Text('Login'),
                   ),

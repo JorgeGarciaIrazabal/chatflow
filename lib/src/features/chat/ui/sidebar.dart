@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:chatflow/src/features/chat/bloc/chat_bloc.dart';
-import 'package:chatflow/src/features/chat/bloc/chat_event.dart';
-import 'package:chatflow/src/features/chat/bloc/chat_state.dart';
+import 'package:provider/provider.dart';
+import 'package:chatflow/src/features/chat/controllers/chat_controller.dart';
 import 'package:chatflow/src/core/models/conversation_model.dart';
 
 class Sidebar extends StatelessWidget {
@@ -10,48 +8,59 @@ class Sidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ChatBloc, ChatState>(
-      builder: (context, state) {
-        return Drawer(
-          child: Column(
-            children: [
-              const DrawerHeader(
-                decoration: BoxDecoration(
-                  color: Colors.deepPurple,
-                ),
-                child: Center(
-                  child: Text(
-                    'Chatflow',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+    return Drawer(
+      child: Column(
+        children: [
+          const DrawerHeader(
+            decoration: BoxDecoration(
+              color: Colors.deepPurple,
+            ),
+            child: Center(
+              child: Text(
+                'Chatflow',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: state.conversations.length,
-                  itemBuilder: (context, index) {
-                    final conversation = state.conversations[index];
-                    return ConversationTile(conversation: conversation);
-                  },
-                ),
-              ),
-              const UserSettingsSection(),
-            ],
+            ),
           ),
-        );
-      },
+          Expanded(
+            child: Consumer<ChatController>(
+              builder: (context, chatController, child) {
+                return ListView.builder(
+                  itemCount: chatController.conversations.length,
+                  itemBuilder: (context, index) {
+                    final conversation = chatController.conversations[index];
+                    return ConversationTile(
+                      conversation: conversation,
+                      onTap: () {
+                        chatController.selectConversation(conversation.id);
+                        Navigator.pop(context); // Close the drawer
+                      },
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+          const UserSettingsSection(),
+        ],
+      ),
     );
   }
 }
 
 class ConversationTile extends StatelessWidget {
   final ConversationResponse conversation;
+  final VoidCallback onTap;
 
-  const ConversationTile({super.key, required this.conversation});
+  const ConversationTile({
+    super.key,
+    required this.conversation,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -66,14 +75,7 @@ class ConversationTile extends StatelessWidget {
         '${conversation.messages.length} messages',
         style: const TextStyle(fontSize: 12),
       ),
-      onTap: () {
-        context.read<ChatBloc>().add(
-              ChatSelectConversationEvent(
-                conversationId: conversation.id,
-              ),
-            );
-        Navigator.pop(context); // Close the drawer
-      },
+      onTap: onTap,
     );
   }
 }
