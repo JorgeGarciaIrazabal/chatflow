@@ -35,17 +35,7 @@ class ChatRepository {
       );
 
       if (response.statusCode == 200) {
-        // For now, simulate a response since the API might return streaming
-        // In a real implementation, we would handle the streaming response
-        return MessageResponse(
-          content: 'This is a simulated response from the AI',
-          role: MessageRole.assistant,
-          responseType: ResponseType.text,
-          id: DateTime.now().millisecondsSinceEpoch,
-          conversationId: conversationId ?? 1,
-          userId: null,
-          createdAt: DateTime.now(),
-        );
+        return MessageResponse.fromJson(json.decode(response.body));
       } else {
         throw Exception('Failed to send message: ${response.statusCode}');
       }
@@ -99,6 +89,32 @@ class ChatRepository {
         return ConversationResponse.fromJson(json.decode(response.body));
       } else {
         throw Exception('Failed to load conversation: ${response.statusCode}');
+      }
+    } catch (e, s) {
+      ErrorHandlerService.handleError(e, s);
+      rethrow;
+    }
+  }
+
+  // Create a new conversation (no request body as per OpenAPI spec)
+  Future<ConversationResponse> createConversation() async {
+    try {
+      final token = await authRepository.getToken();
+      if (token == null) {
+        throw Exception('Not authenticated');
+      }
+
+      final response = await http.post(
+        Uri.parse('$_baseUrl/conversations'),
+        headers: {
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return ConversationResponse.fromJson(json.decode(response.body));
+      } else {
+        throw Exception('Failed to create conversation: ${response.statusCode}');
       }
     } catch (e, s) {
       ErrorHandlerService.handleError(e, s);
