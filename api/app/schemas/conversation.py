@@ -68,7 +68,6 @@ class ConversationResponse(ConversationBase):
 class ChatRequest(BaseModel):
     message: str
     conversation_id: Optional[int] = None
-    stream: bool = True
 
 
 class ChatResponseChunk(BaseModel):

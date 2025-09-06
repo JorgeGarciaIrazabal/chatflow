@@ -22,7 +22,7 @@ app = FastAPI(
     title="Chatflow API",
     description="Backend API for AI chat applications with MCP integration",
     version="0.1.0",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 # Configure CORS
@@ -45,7 +45,7 @@ async def root():
         "message": "Chatflow API is running",
         "version": "0.1.0",
         "docs": "/docs",
-        "redoc": "/redoc"
+        "redoc": "/redoc",
     }
 
 
@@ -54,5 +54,5 @@ async def health_check():
     return {"status": "healthy", "service": "chatflow-api"}
 
 
-if __name__ == '__main__':
-    uvicorn.run(app, host='0.0.0.0', port=8000)
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
