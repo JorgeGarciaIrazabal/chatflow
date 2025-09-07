@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -80,10 +81,32 @@ class AuthRepository {
     if (userJson != null) {
       return User.fromJson(json.decode(userJson));
     }
+    if (kDebugMode) {
+      final fakeUser = User(
+        id: -1,
+        email: 'debug@test.com',
+        fullName: 'Debug User',
+        isActive: true,
+        isVerified: true,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+      await _preferences.setString('user', json.encode(fakeUser.toJson()));
+      return fakeUser;
+    }
     return null;
   }
 
   Future<String?> getToken() async {
-    return await _secureStorage.read(key: 'access_token');
+    final token = await _secureStorage.read(key: 'access_token');
+    if (token != null) {
+      return token;
+    }
+    if (kDebugMode) {
+      const fakeToken = 'fake_token_for_debug';
+      await _secureStorage.write(key: 'access_token', value: fakeToken);
+      return fakeToken;
+    }
+    return null;
   }
 }

@@ -13,11 +13,34 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    final chatController = Provider.of<ChatController>(context, listen: false);
+    chatController.addListener(_scrollToBottom);
+  }
 
   @override
   void dispose() {
     _messageController.dispose();
+    _scrollController.dispose();
+    final chatController = Provider.of<ChatController>(context, listen: false);
+    chatController.removeListener(_scrollToBottom);
     super.dispose();
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
   }
 
   void _sendMessage(ChatController chatController) {
@@ -97,6 +120,7 @@ class _ChatScreenState extends State<ChatScreen> {
             children: [
               Expanded(
                 child: ListView.builder(
+                  controller: _scrollController,
                   itemCount: chatController.messages.length,
                   itemBuilder: (context, index) {
                     final message = chatController.messages[index];

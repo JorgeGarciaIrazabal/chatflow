@@ -11,31 +11,48 @@ class ChatRepository {
 
   ChatRepository({required this.authRepository});
 
-  Future<MessageResponse> sendMessage({
+  Stream<MessageResponse> sendMessage({
     required String message,
     int? conversationId,
-  }) async {
+  }) async* {
     try {
       final token = await authRepository.getToken();
       if (token == null) {
         throw Exception('Not authenticated');
       }
 
-      final response = await http.post(
+      final request = http.Request(
+        'POST',
         Uri.parse('$_baseUrl/conversations/chat'),
-        headers: {
+      )
+        ..headers.addAll({
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
-        },
-        body: json.encode({
+          'Accept': 'text/event-stream',
+        })
+        ..body = json.encode({
           'message': message,
           'conversation_id': conversationId,
-          'stream': false,
-        }),
-      );
+          'stream': true,
+        });
+
+      final client = http.Client();
+      final response = await client.send(request);
 
       if (response.statusCode == 200) {
-        return MessageResponse.fromJson(json.decode(response.body));
+        final stream = response.stream
+            .transform(utf8.decoder)
+            .transform(const LineSplitter());
+
+        await for (final line in stream) {
+          if (line.startsWith('data:')) {
+            final jsonString = line.substring(5);
+            if (jsonString.isNotEmpty) {
+              final data = json.decode(jsonString);
+              yield MessageResponse.fromJson(data);
+            }
+          }
+        }
       } else {
         throw Exception('Failed to send message: ${response.statusCode}');
       }

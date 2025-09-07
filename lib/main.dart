@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:chatflow/src/core/models/user_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -9,6 +12,8 @@ import 'package:chatflow/src/features/chat/controllers/chat_controller.dart';
 import 'package:chatflow/src/features/chat/repository/chat_repository.dart';
 import 'package:chatflow/src/features/chat/ui/chat_screen.dart';
 
+const bool kDebugMode = true;
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
@@ -18,6 +23,20 @@ void main() async {
   };
   
   final SharedPreferences preferences = await SharedPreferences.getInstance();
+
+  if (kDebugMode) {
+    final fakeUser = User(
+      id: 1,
+      email: 'debug@test.com',
+      fullName: 'Debug User',
+      isActive: true,
+      isVerified: true,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+    await preferences.setString('user', json.encode(fakeUser.toJson()));
+  }
+
   runApp(MyApp(preferences: preferences));
 }
 

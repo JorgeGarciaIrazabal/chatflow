@@ -41,7 +41,10 @@ class ChatController extends ChangeNotifier {
   Future<void> sendMessage(String message) async {
     if (_selectedConversationId == null) {
       // No conversation selected: create a new conversation with a single AI assistant
-      await _createConversationIfNeeded();
+      final conversationCreated = await _createConversationIfNeeded();
+      if (!conversationCreated) {
+        return; // Stop if conversation creation fails
+      }
     }
 
     _setLoading(true);
@@ -61,14 +64,18 @@ class ChatController extends ChangeNotifier {
       _messages = [..._messages, userMessage];
       notifyListeners();
 
-      // Send message to API and get response
-      final response = await chatRepository.sendMessage(
+      // Send message to API and get response stream
+      final stream = chatRepository.sendMessage(
         message: message,
         conversationId: _selectedConversationId,
       );
 
-      // Add AI response to messages
-      _messages = [..._messages, response];
+      // Listen to the stream and add AI responses
+      await for (final response in stream) {
+        _messages = [..._messages, response];
+        notifyListeners();
+      }
+
       _isLoading = false;
       notifyListeners();
     } catch (e, s) {
@@ -114,7 +121,7 @@ class ChatController extends ChangeNotifier {
   }
 
   // Private helper: create a new conversation if none is selected
-  Future<void> _createConversationIfNeeded() async {
+  Future<bool> _createConversationIfNeeded() async {
     try {
       // Create a new conversation (title handled by backend or default)
       final newConversation = await chatRepository.createConversation();
@@ -124,9 +131,11 @@ class ChatController extends ChangeNotifier {
       // Load its messages (should be empty)
       _messages = newConversation.messages;
       notifyListeners();
+      return true;
     } catch (e, s) {
       ErrorHandlerService.handleError(e, s);
       _setError(e.toString());
+      return false;
     }
   }
 
